@@ -8,12 +8,15 @@ using Dapper;
 public static class DBManager
 {
 	static string connStr = "Data Source=.\\biketrips.db;Version=3;";
-	static string orderBy = " ORDER BY deptTime";
+	//static string distinct = "distinct";
+	static string orderBy = "";
+	static string limit = " LIMIT 30";
+	public static int totalEntryCount = 0;
 	public static List<Trip> OrderBy(List<string> columns)
 	{
 		if (columns == null || columns.Count == 0)
 		{
-			orderBy = " ORDER BY deptTime";
+			orderBy = "";
 		}
 		else {
 			string str = " ORDER BY ";
@@ -21,15 +24,33 @@ public static class DBManager
 			{
 				str += column + ",";
 			}
-			orderBy = str.Substring(0, str.Length - 1);
+			string temp = str.Substring(0, str.Length - 1);
+			if (!temp.Equals(orderBy))
+				orderBy = temp;
+			else
+			{
+				//if already using the same order, reverse the order
+				str = " ORDER BY ";
+				foreach (string column in columns)
+				{
+					str += column + " DESC,";
+				}
+				orderBy = str.Substring(0, str.Length - 1);
+			}
 		}
+		return LoadTrips();
+	}
+	public static List<Trip> Limit(int count = 30,int pageIndex = 0)
+	{
+		limit = " LIMIT "+(pageIndex*count) + ", "+count;
 		return LoadTrips();
 	}
 	public static List<Trip> LoadTrips()
 	{
 		using (IDbConnection cnn = new SQLiteConnection(connStr))
 		{
-			IEnumerable<Trip> output = cnn.Query<Trip>("select * from TRIPS"+orderBy+" LIMIT 50");
+			if(totalEntryCount==0)Task.Run(() => LoadStats());
+			IEnumerable<Trip> output = cnn.Query<Trip>("select * from TRIPS"+orderBy+limit);
 			return output.ToList();
 		}
 	}
@@ -63,6 +84,17 @@ public static class DBManager
 			counter = 0;
 			Console.WriteLine("--" + totalCounter + " of " + totalTripCount + " saved (" + (float)totalCounter / (float)totalTripCount * 100 + "%)!");
 
+		}
+	}
+	public static async Task LoadStats()
+	{
+		totalEntryCount = -1;
+		using (IDbConnection cnn = new SQLiteConnection(connStr))
+		{
+			
+				IEnumerable<Trip> output = cnn.Query<Trip>("select * from TRIPS");
+				totalEntryCount = output.ToList().Count;
+			
 		}
 	}
 	public static void TrimDatabase()

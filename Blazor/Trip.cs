@@ -92,6 +92,15 @@ public partial class Trip
 			}
 		}
 	}
+	public string GetDistanceKm()
+	{
+		float f = (float)distance / (float)1000;
+		return f.ToString("0.00") + " km";
+	}
+	public string GetDurationMin()
+	{
+		return ((float)duration / (float)60).ToString("0.0") + " min";
+	}
 	public string GetData()
 	{
 		string s = "";
