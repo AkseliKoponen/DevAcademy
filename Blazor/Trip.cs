@@ -1,27 +1,25 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-
 public partial class Trip
 {
-	
+
 	public string? deptTime { get; set; }
 
-    public string? retTime { get; set; }
+	public string? retTime { get; set; }
 
-    public int? deptStationId { get; set; }
+	public int? deptStationId { get; set; }
 
-    public string? deptStationName { get; set; }
+	public string? deptStationName { get; set; }
 
-    public int? retStationId { get; set; }
+	public int? retStationId { get; set; }
 
-    public string? retStationName { get; set; }
+	public string? retStationName { get; set; }
 
-    public int? distance { get; set; }
+	public int? distance { get; set; }
 
-    public int? duration { get; set; }
+	public int? duration { get; set; }
 	public Trip() { }
 	public Trip(string line)
 	{
@@ -37,7 +35,8 @@ public partial class Trip
 				{
 					fis[i].SetValue(this, int.Parse(data[i]));
 				}
-				catch {
+				catch
+				{
 				}
 			}
 		}
@@ -99,7 +98,7 @@ public partial class Trip
 		foreach (PropertyInfo fi in GetType().GetProperties())
 		{
 			object obj = fi.GetValue(this);
-			s += (obj != null ? "'"+obj.ToString()+"'" : "NULL") + ", ";
+			s += (obj != null ? "'" + obj.ToString() + "'" : "NULL") + ", ";
 		}
 		return s.Substring(0, s.Length - 2);
 	}

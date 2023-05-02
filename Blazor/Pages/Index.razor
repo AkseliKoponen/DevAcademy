@@ -1,0 +1,42 @@
+﻿@page "/"
+
+<PageTitle>HSL City Bike Trips 2021</PageTitle>
+<h3>View All Bike Trips</h3>
+@if (displayedTrips == null)
+{
+		<p><em>Loading...</em></p>
+}
+else
+{
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Departure station</th>
+					<th>Departure time</th>
+					<th>Return station</th>
+					<th>Return time</th>
+				</tr>
+			</thead>
+			<tbody>
+			@foreach (var trip in displayedTrips)
+			{
+						<tr>
+							<td>@trip.deptStationName</td>
+							<td>@trip.deptTime</td>
+							<td>@trip.retStationName</td>
+							<td>@trip.retTime</td>
+						</tr>
+			}
+			</tbody>
+		</table>
+}
+
+@code {
+	private List<Trip>? displayedTrips;
+	private int _currentPage;
+	private int _pageDisplayCount;
+	protected override async Task OnInitializedAsync()
+	{
+		displayedTrips = DBManager.LoadTrips();
+	}
+}

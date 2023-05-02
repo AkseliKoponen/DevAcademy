@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 public static class CSVReader
@@ -11,7 +9,7 @@ public static class CSVReader
 	{
 		trips = new List<Trip>();
 		await reader.ReadLineAsync(); // skip header row
-		//int id = 0;
+										//int id = 0;
 		while (true)
 		{
 			string? s = await reader.ReadLineAsync();
