@@ -1,10 +1,26 @@
 ﻿@page "/stationView"
 
+<style>
+	.button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+.button2 {background-color: #008CBA; padding: 16px 32px;}
+</style>
+
 <PageTitle>HSL City Bike Trips 2021</PageTitle>
-<h3>Station Specific View</h3>
+<h3>Station View</h3>
 <select class="form-control selectpicker" @bind="fid">
 	<option>--select--</option>
-		@foreach (Station station in CSVReader.stations)
+		@foreach (Station station in Station.stations)
 		{
 		<option value="@station.fid">@station.GetListName()</option>
 		
@@ -13,35 +29,97 @@
 @if (fid > 0)
 {
 	SetStation();
+	<table><tr><td>Filter by month</td>
+			<td>@if (filterMonth!=5) {
+					<button class="button" @onclick="()=>SetFilterMonth(5)">May</button>
+				}
+				else
+				{
+					<button class="button button2" @onclick="()=>SetFilterMonth(5)">May</button>
+				}
+			</td>
+			<td>
+				@if (filterMonth != 6)
+				{
+							<button class="button" @onclick="()=>SetFilterMonth(6)">June</button>
+				}
+				else
+				{
+							<button class="button button2" @onclick="()=>SetFilterMonth(6)">June</button>
+				}
+			</td>
+			<td>
+				@if (filterMonth != 7)
+				{
+							<button class="button" @onclick="()=>SetFilterMonth(7)">July</button>
+				}
+				else
+				{
+							<button class="button button2" @onclick="()=>SetFilterMonth(7)">July</button>
+				}
+			</td>
+		</tr></table>
 	@if (selectedStation != null)
 	{
-		<table class="table">
-			<thead>
+		<table>
 				<tr>
-					@foreach (string s in Station.GetColumnNames())
-					{
-
-						<th>@s</th>
-					}
+					<th>Station Name</th>
+							<td></td>
+					<td>@selectedStation.name</td>
 				</tr>
-			</thead>
-			<tbody>
 				<tr>
-					@foreach (string s in selectedStation.GetDisplayedData())
-					{
-						<td>@s</td>
-					}
+					<th>Station Address</th>
+							<td></td>
+					<td>@selectedStation.address</td>
 				</tr>
-		</tbody>
-	</table>
+				<tr>
+					<th>TotalDepartures</th>
+							<td></td>
+					<td>@selectedStation.totalTripsFrom</td>
+				</tr>
+				<tr>
+					<th>Total Returns</th>
+							<td></td>
+					<td>@selectedStation.totalTripsTo</td>
+				</tr>
+				<tr>
+					<th>Average distance traveled after departing</th>
+					<td></td>
+					<td>@selectedStation.averageDistanceFrom meters</td>
+				</tr>
+				<tr>
+					<th>Average distance traveled before returning</th>
+					<td></td>
+					<td>@selectedStation.averageDistanceTo meters</td>
+				</tr>
+		</table>
+		<table class="table1">
+				<tr>
+					<th>Most common destination stations</th>
+					
+				</tr>
+			@for(int i = 0; i < selectedStation.topStationsTo.Count; i++)
+			{
+							<tr><td>@((i + 1).ToString()) --- @selectedStation.topStationsTo[i].name</td></tr>
+			}
+						<tr>
+							<th>Most common origin stations</th>
+							
+						</tr>
+			@for (int i = 0; i < selectedStation.topStationsTo.Count; i++)
+			{
+						<tr><td>@((i + 1).ToString()) --- @selectedStation.topStationsFrom[i].name</td></tr>
+			}
+		</table>
 	}
 }
 @code {
+	int filterMonth = default;
 	int fid=0;
 	Station selectedStation;
 	void SetStation()
 	{
-		foreach (Station s in CSVReader.stations)
+		foreach (Station s in Station.stations)
 		{
 			if (s.fid == fid)
 			{
@@ -49,5 +127,17 @@
 				break;
 			}
 		}
+		if (selectedStation != null)
+			selectedStation.CalculateInfo(filterMonth);
+	}
+	void SetFilterMonth(int month)
+	{
+		if (month == filterMonth)
+			filterMonth = default;
+		else
+			filterMonth = month;
+
+		if (selectedStation != null)
+			selectedStation.CalculateInfo(filterMonth);
 	}
 }

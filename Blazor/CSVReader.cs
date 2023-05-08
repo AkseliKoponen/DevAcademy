@@ -4,22 +4,22 @@ using System.Threading.Tasks;
 
 public static class CSVReader
 {
-	public static List<Station> stations;
 	public static async Task ReadLocal(StreamReader reader)
 	{
-		stations = new List<Station>();
+		Station.stations = new List<Station>();
 		await reader.ReadLineAsync(); // skip header row
 		while (true)
 		{
 			string? s = await reader.ReadLineAsync();
 			if (s != null)
 			{
-				stations.Add(new Station(s));
+				Station.stations.Add(new Station(s));
 			}
 			else
 				break;
 
 		}
+		Station.stations.Sort(Station.CompareByID);
 	}
 	public static List<string> LineToList(string line)
 	{

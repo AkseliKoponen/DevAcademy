@@ -90,8 +90,9 @@ else
 	}
 	void ChangePage(int i)
 	{
-		currentPage = Math.Clamp(i + currentPage, 0, 1000);
-		displayedTrips = DBManager.Limit(pageDisplayCount, currentPage);
+		currentPage = Math.Clamp(i + currentPage, 0, 1000); 
+		DBManager.Limit(pageDisplayCount, currentPage);
+		displayedTrips = DBManager.LoadTrips();
 	}
 	string GetPageString()
 	{
@@ -122,7 +123,8 @@ else
 				break;
 		}
 		orderIndex = index;
-		displayedTrips = DBManager.OrderBy(order);
+		DBManager.OrderBy(order);
+		displayedTrips = DBManager.LoadTrips();
 	}
 
 }

@@ -10,9 +10,28 @@ public static class DBManager
 	static string connStr = "Data Source=.\\biketrips.db;Version=3;";
 	//static string distinct = "distinct";
 	static string orderBy = "";
+	static string where = "";
 	static string limit = " LIMIT 30";
 	public static int totalEntryCount = 0;
-	public static List<Trip> OrderBy(List<string> columns)
+	public static void ResetFilters()
+	{
+		orderBy = "";
+		where = "";
+	}
+	public static void AddWhere(string str)
+	{
+		if (where == "" || where == null)
+			where = " WHERE ";
+		else
+			where += " AND ";
+		where += str;
+
+	}
+	public static void Where(string str)
+	{
+		where = " WHERE " + str;
+	}
+	public static void OrderBy(List<string> columns)
 	{
 		if (columns == null || columns.Count == 0)
 		{
@@ -38,20 +57,30 @@ public static class DBManager
 				orderBy = str.Substring(0, str.Length - 1);
 			}
 		}
-		return LoadTrips();
 	}
-	public static List<Trip> Limit(int count = 30,int pageIndex = 0)
+	public static void Limit(int count = 30,int pageIndex = 0)
 	{
-		limit = " LIMIT "+(pageIndex*count) + ", "+count;
-		return LoadTrips();
+		if (count <= 0)
+			limit = "";
+		else
+			limit = " LIMIT "+(pageIndex*count) + ", "+count;
 	}
 	public static List<Trip> LoadTrips()
 	{
 		using (IDbConnection cnn = new SQLiteConnection(connStr))
 		{
 			if(totalEntryCount==0)Task.Run(() => LoadStats());
-			IEnumerable<Trip> output = cnn.Query<Trip>("select * from TRIPS"+orderBy+limit);
+			IEnumerable<Trip> output = cnn.Query<Trip>("select * from TRIPS"+where+orderBy+limit);
 			return output.ToList();
+		}
+	}
+	public static int GetCount()
+	{
+		using (IDbConnection cnn = new SQLiteConnection(connStr))
+		{
+			IEnumerable<int> temp = cnn.Query<int>("SELECT COUNT(*) from TRIPS" + where + orderBy + limit);
+			return temp.ToList()[0];
+
 		}
 	}
 	public static void SaveTrip(Trip trip)
@@ -91,9 +120,8 @@ public static class DBManager
 		totalEntryCount = -1;
 		using (IDbConnection cnn = new SQLiteConnection(connStr))
 		{
-			
-				IEnumerable<Trip> output = cnn.Query<Trip>("select * from TRIPS");
-				totalEntryCount = output.ToList().Count;
+			IEnumerable<int> temp = cnn.Query<int>("SELECT COUNT(*) from TRIPS");
+			totalEntryCount = temp.ToList()[0];
 			
 		}
 	}

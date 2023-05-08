@@ -111,6 +111,14 @@ public partial class Trip
 		}
 		return s.Substring(0, s.Length - 2);
 	}
+	public DateTime GetDeptTime()
+	{
+		return GetDateTimeFromString(deptTime);
+	}
+	public DateTime GetRetTime()
+	{
+		return GetDateTimeFromString(retTime);
+	}
 	public static string GetColumns()
 	{
 
