@@ -4,54 +4,39 @@ using System.Threading.Tasks;
 
 public static class CSVReader
 {
-	public static List<Trip> trips;
+	public static List<Station> stations;
 	public static async Task ReadLocal(StreamReader reader)
 	{
-		trips = new List<Trip>();
+		stations = new List<Station>();
 		await reader.ReadLineAsync(); // skip header row
-										//int id = 0;
 		while (true)
 		{
 			string? s = await reader.ReadLineAsync();
 			if (s != null)
 			{
-				Trip bt = new Trip(s);
-				if (bt.Validate())
-				{
-					trips.Add(bt);
-				}
+				stations.Add(new Station(s));
 			}
 			else
 				break;
 
 		}
 	}
-	public static async Task ReadOnline(string url = "https://dev.hsl.fi/citybikes/od-trips-2021/2021-05.csv")
-	{
-		HttpClient httpClient = new HttpClient();
-		HttpResponseMessage response = await httpClient.GetAsync(url);
-
-		if (response.IsSuccessStatusCode)
-		{
-			Stream stream = await response.Content.ReadAsStreamAsync();
-			Task t = Task.Run(() => CSVReader.ReadLocal(new StreamReader(stream)));
-		}
-		else
-		{
-			Console.WriteLine("Error downloading file: " + response.ReasonPhrase);
-		}
-
-
-	}
-
-	public static List<string> LineToList(string line, char separator = ',')
+	public static List<string> LineToList(string line)
 	{
 		List<string> list = new List<string>();
+		char separator = ',';
+
 		while (line.Contains(separator))
 		{
 			string s = line.Substring(0, line.IndexOf(separator));
+			bool quotes = (s.StartsWith('"') && line.Substring(1).Contains('"'));
+			if(quotes)
+			{
+				s =  '"' + line.Substring(1, line.Substring(1).IndexOf('"')+1);
+			}
+			line = line.Substring(s.Length+1);
+			if(quotes) s= s.Substring(1,s.Length-2);
 			list.Add(s);
-			line = line.Substring(line.IndexOf(separator) + 1);
 		}
 		list.Add(line);
 		return list;

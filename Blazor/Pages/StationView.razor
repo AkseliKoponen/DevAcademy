@@ -2,7 +2,52 @@
 
 <PageTitle>HSL City Bike Trips 2021</PageTitle>
 <h3>Station Specific View</h3>
+<select class="form-control selectpicker" @bind="fid">
+	<option>--select--</option>
+		@foreach (Station station in CSVReader.stations)
+		{
+		<option value="@station.fid">@station.GetListName()</option>
+		
+		}
+</select>
+@if (fid > 0)
+{
+	SetStation();
+	@if (selectedStation != null)
+	{
+		<table class="table">
+			<thead>
+				<tr>
+					@foreach (string s in Station.GetColumnNames())
+					{
 
+						<th>@s</th>
+					}
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					@foreach (string s in selectedStation.GetDisplayedData())
+					{
+						<td>@s</td>
+					}
+				</tr>
+		</tbody>
+	</table>
+	}
+}
 @code {
-
+	int fid=0;
+	Station selectedStation;
+	void SetStation()
+	{
+		foreach (Station s in CSVReader.stations)
+		{
+			if (s.fid == fid)
+			{
+				selectedStation = s;
+				break;
+			}
+		}
+	}
 }
