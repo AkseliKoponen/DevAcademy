@@ -404,3 +404,5 @@ FodyWeavers.xsd
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio
 Blazor/biketrips.db
+Blazor/Properties/ServiceDependencies/DevAcademyAkseliKoponen - Web Deploy1/profile.arm.json
+Blazor/Properties/ServiceDependencies/DevAcademy - Web Deploy/profile.arm.json

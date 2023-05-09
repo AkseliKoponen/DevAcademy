@@ -192,25 +192,25 @@ public class Station
 	List<Trip> GetJourneysFrom()
 	{
 		DBManager.ResetFilters();
-		DBManager.Where("deptStationId = " + id);
+		DBManager.SetWhere("deptStationId = " + id);
 		return DBManager.LoadTrips();
 	}
 	public int GetCountFrom()
 	{
 		DBManager.ResetFilters();
-		DBManager.Where("deptStationId = " + id);
+		DBManager.SetWhere("deptStationId = " + id);
 		return DBManager.GetCount();
 	}
 	public int GetCountTo()
 	{
 		DBManager.ResetFilters();
-		DBManager.Where("retStationId = " + id);
+		DBManager.SetWhere("retStationId = " + id);
 		return DBManager.GetCount();
 	}
 	List<Trip> GetJourneysTo()
 	{
 		DBManager.ResetFilters();
-		DBManager.Where("retStationId = " + id);
+		DBManager.SetWhere("retStationId = " + id);
 		return DBManager.LoadTrips();
 	}
 
