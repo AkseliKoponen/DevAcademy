@@ -2,26 +2,38 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.Arm;
 using Dapper;
 
-public static class DBManager
+public class DBManager
 {
+	public static void SetTable(bool trip)
+	{
+		currentTable = trip?trips:stations;
+	}
+	public static DBManager currentTable;
+	public static DBManager trips { get; private set; } = new DBManager("TRIPS");
+	public static DBManager stations { get; private set; } = new DBManager("STATIONS");
+	public string table { get; private set; }
+	DBManager(string _table)
+	{
+		table = _table;
+	}
 	static string connStr = "Data Source=.\\biketrips.db;Version=3;";
-	//static string distinct = "distinct";
-	static string orderBy = "";
-	static List<string> whereString = new List<string>(); 
-	static string limit = " LIMIT 30";
-	public static int matchCount = 0;
+	string orderBy = "";
+	List<string> whereString = new List<string>(); 
+	string limit = " LIMIT 30";
+	public int matchCount = 0;
 	/// <summary>
 	/// Clear order and where.
 	/// </summary>
-	public static void ResetFilters()
+	public  void ResetFilters()
 	{
 		orderBy = "";
 		whereString = new List<string>();
 	}
-	public static void RemoveFilterColumn(string column)
+	public  void RemoveFilterColumn(string column)
 	{
 		for(int i = 0; i < whereString.Count; i++)
 		{
@@ -32,7 +44,7 @@ public static class DBManager
 			}
 		}
 	}
-	static string GetWhereString(bool and = true)
+	 string GetWhereString(bool and = true)
 	{
 		if (whereString.Count > 0)
 		{
@@ -52,7 +64,7 @@ public static class DBManager
 	/// <summary>
 	/// Add a conditional to an existing WHERE
 	/// </summary>
-	public static void AddWhere(string str)
+	public  void AddWhere(string str)
 	{
 		//Only one filter allowed for one column. When adding a new filter, make sure to remove the old one.
 		string column = str.Substring(0, str.IndexOf(" "));
@@ -63,7 +75,7 @@ public static class DBManager
 	/// <summary>
 	/// Set a WHERE conditional to a future LoadTrip()
 	/// </summary>
-	public static void SetWhere(string str)
+	public  void SetWhere(string str)
 	{
 		whereString = new List<string> { str };
 	}
@@ -73,7 +85,7 @@ public static class DBManager
 	/// If the order is already the same, reverse the order (from descending to ascending) and return false
 	/// Return true if not the same order or columns is null
 	/// </summary>
-	public static bool OrderBy(List<string> columns)
+	public  bool OrderBy(List<string> columns)
 	{
 		if (columns == null || columns.Count == 0)
 		{
@@ -108,7 +120,7 @@ public static class DBManager
 	/// <summary>
 	/// Sets the limit of retrieved rows from database.
 	/// </summary>
-	public static void Limit(int count = 30,int pageIndex = 0)
+	public  void Limit(int count = 30,int pageIndex = 0)
 	{
 		if (count <= 0)
 			limit = "";
@@ -116,26 +128,39 @@ public static class DBManager
 			limit = " LIMIT "+(pageIndex*count) + ", "+count;
 	}
 	/// <summary>
-	/// Load Trips from the database with conditions that have been set by Where() and OrderBy().
+	/// Load entries from the database with conditions that have been set by Where() and OrderBy().
 	/// The size of the returned list is limited by Limit()
 	/// </summary>
 	public static List<Trip> LoadTrips()
 	{
 		using (IDbConnection cnn = new SQLiteConnection(connStr))
 		{
-			matchCount = GetCount(false);
-			IEnumerable<Trip> output = cnn.Query<Trip>("select * from TRIPS"+GetWhereString()+orderBy+limit);
-			return output.ToList();
+			DBManager dbm = trips;
+			dbm.matchCount = dbm.GetCount(false);
+			return cnn.Query<Trip>("select * from " + dbm.table + dbm.GetWhereString() + dbm.orderBy + dbm.limit).ToList();
 		}
-	}
-	/// <summary>
-	/// Get the total count of trips matching the criteria
-	/// </summary>
-	public static int GetCount(bool _limit = true)
+	}   /// <summary>
+		/// Load entries from the database with conditions that have been set by Where() and OrderBy().
+		/// The size of the returned list is limited by Limit()
+		/// </summary>
+	public static List<Station> LoadStations()
 	{
 		using (IDbConnection cnn = new SQLiteConnection(connStr))
 		{
-			IEnumerable<int> temp = cnn.Query<int>("SELECT COUNT(*) from TRIPS" + GetWhereString() + orderBy + (_limit?limit:""));
+			DBManager dbm = stations;
+			dbm.matchCount = dbm.GetCount(false);
+			string query = "select * from " + dbm.table + dbm.GetWhereString() + dbm.orderBy + dbm.limit;
+			return cnn.Query<Station>("select * from " + dbm.table + dbm.GetWhereString() + dbm.orderBy + dbm.limit).ToList();
+		}
+	}
+	/// <summary>
+	/// Get the total count of entries matching the criteria
+	/// </summary>
+	public  int GetCount(bool _limit = true)
+	{
+		using (IDbConnection cnn = new SQLiteConnection(connStr))
+		{
+			IEnumerable<int> temp = cnn.Query<int>("SELECT COUNT(*) from "+table + GetWhereString() + orderBy + (_limit?limit:""));
 			return temp.ToList()[0];
 
 		}
@@ -143,17 +168,32 @@ public static class DBManager
 	/// <summary>
 	/// Saves a new trip into the database
 	/// </summary>
-	public static void SaveTrip(Trip trip)
+	public void Save(object obj)
 	{
+		if (new List<Type> { typeof(Trip), typeof(Station) }.Contains(obj.GetType()) == false)
+		{
+			Console.WriteLine("No table for " + obj.GetType().Name);
+			return;
+		}
 		using (IDbConnection cnn = new SQLiteConnection(connStr))
 		{
-			cnn.Execute("insert into TRIPS values (" + trip.GetData() + ")", trip);
+			if (obj.GetType() == typeof(Trip))
+			{
+				Trip t = (Trip)obj;
+				cnn.Execute("insert into "+table+" values (" + t.GetData() + ")", t);
+			}
+			else if (obj.GetType() == typeof(Station))
+			{
+				Station s = (Station)obj;
+				cnn.Execute("insert into " + table + " values (" + s.GetData() + ")", s);
+			}
 		}
 	}
+	#region Old and Unused
 	/// <summary>
 	/// Saves a large amount of entries to the database
 	/// </summary>
-	public static void SaveTrips(List<Trip> trips)
+	public void SaveTrips(List<Trip> trips)
 	{
 		int connectionReset = 1000;
 		int totalTripCount = trips.Count;
@@ -178,13 +218,14 @@ public static class DBManager
 
 		}
 	}
-	public static void TrimDatabase()
+	public void TrimDatabase()
 	{
 		using (IDbConnection cnn = new SQLiteConnection(connStr))
 		{
-			cnn.Execute("delete from TRIPS where distance < 10");
-			cnn.Execute("delete from TRIPS where duration < 10");
+			cnn.Execute("delete from "+table+" where distance < 10");
+			cnn.Execute("delete from "+table+" where duration < 10");
 		}
 	}
+	#endregion
 
 }

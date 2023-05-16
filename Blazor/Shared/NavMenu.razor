@@ -8,16 +8,11 @@
 </div>
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="">
-                <span class="oi oi-list" aria-hidden="true"></span> Journey List
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="stationView">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Station list
-            </NavLink>
+	<nav class="flex-column">
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="listView" @onclick="()=>SetTable(false)">
+				<span class="oi oi-list" aria-hidden="true"></span> View Stations & Trips
+			</NavLink>
 		</div>
 		<div class="nav-item px-3">
 			<NavLink class="nav-link" href="stationView">
@@ -38,12 +33,16 @@
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
+	private bool collapseNavMenu = true;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+	private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
+	private void ToggleNavMenu()
+	{
+		collapseNavMenu = !collapseNavMenu;
+	}
+	void SetTable(bool trip)
+	{
+		DBManager.SetTable(trip);
+	}
 }

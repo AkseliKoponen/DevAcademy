@@ -1,0 +1,346 @@
+﻿@page "/listView"
+<style>
+	.toggleOff {
+border: 2px solid black;
+  background-color: white;
+border-color: #e7e7e7;
+  color: black;
+  padding: 14px 28px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.toggleOff:hover{
+	background: #e7e7e7
+}	
+.toggleOn {
+border: 2px solid black;
+  background-color: #e7e7e7;
+	border-color: #e7e7e7;
+  color: black;
+  padding: 14px 40px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.toggleOn:hover{
+	background: white
+}
+.search{
+border: 1px
+background-color: white;
+color:black;
+}
+.search:hover{
+	background: #e7e7e7
+}	
+</style>
+
+
+<PageTitle>HSL City Bike Stations</PageTitle>
+<p>
+<h3>Viewing bike @db.table.ToLower() @GetPageString() (of @db.matchCount total).</h3>
+
+@if (db == DBManager.stations)
+{
+	<button @onclick="()=>ChangeTable()" class = "toggleOn">View Bike Trips</button>
+}else
+{
+		<button @onclick="()=>ChangeTable()" class="toggleOn">View Bike Stations</button>
+}
+</p>
+
+@if (displayedTrips == null && displayedStations == null)
+{
+		<p><em>Loading...</em></p>
+}
+else
+{
+		<p>
+		@if (currentPage > 0)
+		{
+					<button @onclick="()=>ChangePage(-1)">Previous Page</button>
+		}
+		else
+		{
+					<button type="button" disabled>Previous Page</button>
+		}
+
+		@if (isLastPage())
+		{
+			<button type="button" disabled>Next Page</button>
+		}
+		else
+		{
+			<button @onclick="()=>ChangePage(1)">Next Page</button>
+		}
+
+		</p>
+
+
+	<table class="table">
+			<tr>
+					<td>
+						<InputText id="name" @bind-Value="filters1"/>
+						<button class="search" @onclick='()=>SetSearch(1)'><i class="oi oi-magnifying-glass"></i></button>
+					</td>
+					<td>
+						<InputText id="name" @bind-Value="filters2"/>
+						<button class="search" @onclick='()=>SetSearch(2)'><i class="oi oi-magnifying-glass"></i></button>
+						</td>
+						<td>
+							<InputText id="name" @bind-Value="filters3"/>
+							<button class="search" @onclick='()=>SetSearch(3)'><i class="oi oi-magnifying-glass"></i></button>
+							</td>
+						<td>
+							<InputText id="name" @bind-Value="filters4"/>
+							<button class="search" @onclick='()=>SetSearch(4)'><i class="oi oi-magnifying-glass"></i></button>
+						</td>
+			</tr>
+		
+			<thead>
+				<tr>
+				@if (buttonNames.Count>=4) {
+					@if (orderIndex != 0)
+					{
+						<th><button class="toggleOff" @onclick="()=>OrderBy(0)">@buttonNames[0]</button></th>
+					}
+					else
+					{
+						<th><button class="toggleOn" @onclick="()=>OrderBy(0)"><b>@buttonNames[0]</b></button></th>
+					}
+					@if (orderIndex != 1)
+					{
+						<th><button class="toggleOff" @onclick="()=>OrderBy(1)">@buttonNames[1]</button></th>
+					}
+					else
+					{
+						<th><button class="toggleOn" @onclick="()=>OrderBy(1)"><b>@buttonNames[1]</b></button></th>
+					}
+					@if (orderIndex != 2)
+					{
+						<th><button class="toggleOff" @onclick="()=>OrderBy(2)">@buttonNames[2]</button></th>
+					}
+					else
+					{
+						<th><button class="toggleOn" @onclick="()=>OrderBy(2)"><b>@buttonNames[2]</b></button></th>
+					}
+					@if (orderIndex != 3)
+					{
+						<th><button class="toggleOff" @onclick="()=>OrderBy(3)">@buttonNames[3]</button></th>
+					}
+					else
+					{
+						<th><button class="toggleOn" @onclick="()=>OrderBy(3)"><b>@buttonNames[3]</b></button></th>
+					}
+				}
+				</tr>
+			</thead>
+			<tbody>
+				@if (db == DBManager.trips)
+				{
+					@foreach (Trip trip in displayedTrips)
+					{
+						<tr>
+							<td>@trip.deptStationName</td>
+							<td>@trip.retStationName</td>
+							<td>@trip.GetDistanceKm()</td>
+							<td>@trip.GetDurationMin()</td>
+						</tr>
+					}
+
+				}
+				else
+				{
+					foreach (Station station in displayedStations)
+					{
+						<tr>
+							@foreach (string str in station.GetListData())
+							{
+								<td>@str</td>
+							}
+						</tr>
+					}
+				}
+			</tbody>
+		</table>
+		
+}
+
+@code {
+	DBManager db = DBManager.stations;
+	string filters1 = "";
+	string filters2 = "";
+	string filters3 = "";
+	string filters4 = "";
+	private List<Trip>? displayedTrips;
+	private List<Station>? displayedStations;
+	private int currentPage = 0;
+	private int pageDisplayCount = 15;
+	List<string> buttonNames = new List<string> { "Departure Station", "Return Station", "Distance (km)", "Duration (min)" };
+
+	protected override async Task OnInitializedAsync()
+	{
+		DefaultSettings();
+	}
+	void DefaultSettings()
+	{
+
+		db = DBManager.currentTable;
+		db.ResetFilters();
+		ChangePage(-currentPage);
+		DefaultButtonNames();
+	}
+	void ChangeTable()
+	{
+		DBManager.SetTable(db == DBManager.stations);
+		DefaultSettings();
+	}
+	void SetSearch(int index)
+	{
+		string column = db == DBManager.trips ? Trip.GetColumns(false)[index] : Station.GetColumnNames(false)[index];
+		//for some reason data binding refuses to work with arrays. -> solution: copy pasta
+		string criteria = "";
+		switch (index)
+		{
+			default:
+				return;
+			case 1:
+				criteria = filters1;
+				break;
+			case 2:
+				criteria = filters2;
+				break;
+			case 3:
+				criteria = filters3;
+				break;
+			case 4:
+				criteria = filters4;
+				break;
+		}
+		string str = "";
+		if ((db == DBManager.trips && index > 2) || (db == DBManager.stations && (index == 1 || index == 4)))
+		{
+			if (criteria.Length == 0)
+				return;
+			criteria = System.Text.RegularExpressions.Regex.Replace(criteria, @"s", "");
+			int indexOfNumber = -1;
+			for (int i = 0; i < criteria.Length; i++)
+			{
+
+				if (char.IsNumber(criteria.ToCharArray()[i]))
+				{
+					indexOfNumber = i;
+					break;
+				}
+			}
+			if (indexOfNumber == -1)
+				return;
+			float number;
+			if (float.TryParse(criteria.Substring(indexOfNumber), out number) == false)
+				return;
+			if (column == "distance")
+				number *= 1000;
+			else if (column == "duration")
+				number *= 60;
+			string operatr = indexOfNumber > 0 ? criteria.Substring(0, indexOfNumber) : "=";
+			str = column + " " + operatr + number;
+		}
+		else
+		{
+			str = column + " LIKE '%" + criteria + "%'";
+		}
+		db.AddWhere(str);
+		UpdateEntries();
+
+	}
+	void UpdateEntries()
+	{
+		if (db == DBManager.trips)
+			displayedTrips = DBManager.LoadTrips();
+		else if (db == DBManager.stations)
+			displayedStations = DBManager.LoadStations();
+	}
+	void SetSearch(string column, string criteria)
+	{
+		if (criteria == null || criteria.Length == 0)
+		{
+			db.RemoveFilterColumn(column);
+			UpdateEntries();
+			return;
+		}
+		if (column == "retStationName" || column == "deptStationName")
+		{
+
+			string str = column + " LIKE '%" + criteria + "%'";
+			db.AddWhere(str);
+			UpdateEntries();
+		}
+		else if (column == "distance" || column == "duration")
+		{
+			if (criteria.Length == 0)
+				return;
+			criteria = System.Text.RegularExpressions.Regex.Replace(criteria, @"s", "");
+			int indexOfNumber = -1;
+			for (int i = 0; i < criteria.Length; i++)
+			{
+
+				if (char.IsNumber(criteria.ToCharArray()[i]))
+				{
+					indexOfNumber = i;
+					break;
+				}
+			}
+			if (indexOfNumber == -1)
+				return;
+			float number;
+			if (float.TryParse(criteria.Substring(indexOfNumber), out number) == false)
+				return;
+			if (column == "distance")
+				number *= 1000;
+			else if (column == "duration")
+				number *= 60;
+			string operatr = indexOfNumber > 0 ? criteria.Substring(0, indexOfNumber) : "=";
+			string str = column + " " + operatr + number;
+			db.AddWhere(str);
+			UpdateEntries();
+		}
+	}
+	void ChangePage(int i)
+	{
+		currentPage = Math.Clamp(i + currentPage, 0, 1000);
+		db.Limit(pageDisplayCount, currentPage);
+		UpdateEntries();
+	}
+	void DefaultButtonNames()
+	{
+
+		buttonNames = db == DBManager.trips ? Trip.GetColumns() : Station.GetColumnNames();
+	}
+	bool isLastPage()
+	{
+		return (currentPage + 1) * pageDisplayCount >= db.matchCount;
+	}
+	string GetPageString()
+	{
+		return ((currentPage * pageDisplayCount) + 1) + " - " + (Math.Clamp(((currentPage + 1) * pageDisplayCount),0,db.matchCount));
+	}
+	void Clear()
+	{
+		db.OrderBy(null);
+		orderIndex = -1;
+		DefaultButtonNames();
+	}
+	int orderIndex = -1;
+	void OrderBy(int index)
+	{
+		ChangePage(-currentPage);
+		displayedTrips = new List<Trip>();
+		displayedStations = new List<Station>();
+		DefaultButtonNames();
+		List<string> order = new List<string> {db==DBManager.stations?Station.GetColumnNames(false)[index]:Trip.GetColumns(false)[index]};
+		bool desc = db.OrderBy(order);
+		char c = desc ? '↓' : '↑';
+		buttonNames[index] = c + " " + buttonNames[index] + " " + c;
+		UpdateEntries();
+	}
+
+}

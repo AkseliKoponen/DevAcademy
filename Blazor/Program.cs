@@ -6,7 +6,6 @@ public class Program
 {
 	public static void Main(string[] args)
 	{
-		Task.Run(() => CSVReader.ReadLocal(new StreamReader("stations.csv")));
 		var builder = WebApplication.CreateBuilder(args);
 
 		// Add services to the container.

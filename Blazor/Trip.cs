@@ -48,16 +48,31 @@ public partial class Trip
 	}
 	static DateTime GetDateTimeFromString(string str)
 	{
-		DateTime dt;
-		List<int> dates = GetSeparatedValues(str.Substring(0, str.IndexOf('T')));
-		int year = dates[0];
-		int month = dates[1];
-		int day = dates[2];
-		List<int> times = GetSeparatedValues(str.Substring(str.IndexOf('T') + 1));
-		int hour = times[0];
-		int minute = times[1];
-		int second = times[2];
-		dt = new DateTime(year, month, day, hour, minute, second);
+		DateTime dt = new DateTime(0);
+		try
+		{
+			if (str.Contains('T'))
+			{
+				List<int> dates = GetSeparatedValues(str.Substring(0, str.IndexOf('T')));
+				int year = dates[0];
+				int month = dates[1];
+				int day = dates[2];
+				List<int> times = GetSeparatedValues(str.Substring(str.IndexOf('T') + 1));
+				int hour = times[0];
+				int minute = times[1];
+				int second = times[2];
+				dt = new DateTime(year, month, day, hour, minute, second);
+			}
+			else
+			{
+				List<int> dates = GetSeparatedValues(str);
+				int year = dates[0];
+				int month = dates[1];
+				int day = dates[2];
+				dt = new DateTime(year, month, day);
+			}
+		}
+		catch { Console.WriteLine(str + " could not be converted to DateTime!!"); }
 		return dt;
 
 		List<int> GetSeparatedValues(string s)
@@ -119,10 +134,12 @@ public partial class Trip
 	{
 		return GetDateTimeFromString(retTime);
 	}
-	public static string GetColumns()
+	public static List<string> GetColumns(bool displayName = true)
 	{
-
-		return "(deptTime, retTime, deptStationId, deptStationName, retStationId, retStationName, distance, duration)";
+		if(displayName)
+			return new List<string> { "Departure Station", "Return Station", "Distance (km)", "Duration (min)" };
+		else
+			return new List<string> { "deptStationName", "retStationName", "distance", "duration"};
 	}
 	public void Debug()
 	{

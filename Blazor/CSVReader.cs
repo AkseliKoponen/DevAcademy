@@ -6,20 +6,21 @@ public static class CSVReader
 {
 	public static async Task ReadLocal(StreamReader reader)
 	{
-		Station.stations = new List<Station>();
+		List<Station> stations = new List<Station>();
 		await reader.ReadLineAsync(); // skip header row
 		while (true)
 		{
 			string? s = await reader.ReadLineAsync();
 			if (s != null)
 			{
-				Station.stations.Add(new Station(s));
+				stations.Add(new Station(s));
 			}
 			else
 				break;
 
 		}
-		Station.stations.Sort(Station.CompareByID);
+		stations.Sort(Station.CompareByID);
+		//foreach (Station station in Station.stations)DBManager.stations.Save(station);
 	}
 	public static List<string> LineToList(string line)
 	{
