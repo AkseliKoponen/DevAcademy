@@ -70,6 +70,7 @@ public class DBManager
 		string column = str.Substring(0, str.IndexOf(" "));
 		RemoveFilterColumn(column);
 		whereString.Add(str);
+		Console.WriteLine(str);
 
 	}
 	/// <summary>
@@ -87,6 +88,7 @@ public class DBManager
 	/// </summary>
 	public  bool OrderBy(List<string> columns)
 	{
+		Console.WriteLine("Ordering by " + columns[0]);
 		if (columns == null || columns.Count == 0)
 		{
 			orderBy = "";

@@ -11,7 +11,6 @@ public class Program
 		// Add services to the container.
 		builder.Services.AddRazorPages();
 		builder.Services.AddServerSideBlazor();
-
 		var app = builder.Build();
 		
 		// Configure the HTTP request pipeline.

@@ -79,6 +79,28 @@ public class Station
 			return temp;
 		}
 	}
+	public Vector2 GetLocation()
+	{
+		return new Vector2(x,y);
+	}
+
+	public double GetDistanceTo(Station other)
+	{
+
+		double cdMultip = 0.0174532925199433;
+
+		double latitude = y * cdMultip;
+		double longitude = x * cdMultip;
+		double num = other.y * cdMultip;
+		double longitude1 = other.x * cdMultip;
+		double num1 = longitude1 - longitude;
+		double num2 = num - latitude;
+		double num3 = Math.Pow(Math.Sin(num2 / 2), 2) + Math.Cos(latitude) * Math.Cos(num) * Math.Pow(Math.Sin(num1 / 2), 2);
+		double num4 = 2 * Math.Atan2(Math.Sqrt(num3), Math.Sqrt(1 - num3));
+		double num5 = 6376500 * num4;
+		return num5;
+		
+	}
 	public List<string> GetDisplayedData()
 	{
 		return new List<string> { id.ToString(), name, address, city, operatr, capacity.ToString(), location.ToString("00.00") };
@@ -228,8 +250,18 @@ public class Station
 		else
 			return new List<string> { "id", "name", "address", "capacity" };
 	}
+	public static List<string> GetInputFieldNames()
+	{
+		return new List<string> { "Name", "Address", "City", "Capacity", "Position (X)", "Position (Y)" };
+	}
 	public static int CompareByID(Station s1, Station s2)
 	{
 		return s1.id.CompareTo(s2.id);
+	}
+	public static List<Station> GetAllStations()
+	{
+		DBManager.stations.Limit(0);
+		DBManager.stations.ResetFilters();
+		return DBManager.LoadStations();
 	}
 }

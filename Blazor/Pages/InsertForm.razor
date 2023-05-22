@@ -1,7 +1,350 @@
-﻿@page "/insertForm"
+﻿@inject IJSRuntime JsRuntime
+@page "/insertForm"
+@using System.Numerics;
+<head>
 
-<h3>InsertForm</h3>
+<style>
+	.right{
+
+  display: flex;
+  justify-content: right;
+  align-items: right;
+	}
+		.submit {
+border: 2px solid black;
+  background-color: white;
+border-color: #e7e7e7;
+  color: black;
+  padding: 14px 28px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.submit:hover{
+	background: #e7e7e7
+}
+.submit:disabled{
+	background: #e7e7e7
+}
+table {
+	border-collapse: separate;
+	border-spacing: 20px 2px;
+}
+
+</style>
+</head>
+<table>
+	<tr>
+		<td>
+			<h3>Insert Station</h3>
+			<table>
+
+			@for(int i = 0;i<stationFields.Count && i<stationNames.Count;i++)
+			{
+				int ii = i;
+				<tr>
+					<td>
+						@stationNames[ii]
+				</td>
+						<td>
+							<input type="text" @bind="stationFields[ii]"/>
+				</td>
+				</tr>
+				}
+				<tr>
+<td>&nbsp;</td>
+<td><div class = "right">
+							@if (stationError == "Station saved successfully!")
+							{
+								@stationError	
+							}
+							else
+							{
+								if (ValidateStation())
+								{
+
+										<button class="submit" @onclick="()=>SubmitStation()">Add Station</button>
+								}
+								else
+								{
+												<button class="submit" disabled @onclick="()=>SubmitStation()" >
+												<Tooltip Text=@stationError>Add Station</Tooltip>
+												</button>
+								}
+							}
+				</div></td>
+</tr>
+</table>
+</td>
+<td>
+		<h3>Insert Trip</h3>
+			<table>
+			@for (int i = 0; i < tripFields.Count && i < tripNames.Count; i++)
+			{
+				int ii = i;
+			<tr>
+			<td>
+						@tripNames[ii]
+			</td>
+				<td>
+							@switch (ii)
+							{
+								default:
+									<input type="text" @bind="tripFields[ii]"/>
+									break;
+								case 0:
+									<input type="datetime-local"
+									min="2021-05-01T08:30"
+									pattern="[0-9]{2}-[0-9]{2}-[0-9]{4}T[0-9]{2}:[0-9]{2}"
+									@bind=depTime/>
+									break;
+								case 2:
+									<input type="datetime-local"
+									min="2021-05-01T08:30"
+									pattern="[0-9]{2}-[0-9]{2}-[0-9]{4}T[0-9]{2}:[0-9]{2}"
+									@bind=retTime/>
+									break;
+								case 1:
+								case 3:
+									<select class="form-control selectpicker" @bind="tripFields[ii]">
+									<option value="" disabled selected>Select @(ii==1?"departure":"return") station</option>
+									@foreach (Station station in Station.GetAllStations())
+									{
+										<option value="@station.id">@station.name</option>
+									}
+									</select>
+									break;
+								case 4:
+								case 5:
+									<input type="number" @bind="tripFields[ii]"/>
+										@if (ii == 4 && tripFields[1] != "" && tripFields[3] != "")
+										{
+															<button @onclick="()=>EstimateDistance()">
+															<Tooltip Text="Estimates the distance between departure and return stations.">Estimate distance</Tooltip>
+															</button>
+										}
+										@if (ii == 5 && depTime!=default && retTime!=default)
+										{
+											<button @onclick="()=>CalculateTripDuration()">
+												<Tooltip Text="Calculates the time between departure and return.">Calculate duration</Tooltip>
+												</button>
+										}
+
+									
+									break;
+							}
+			</td>
+			</tr>
+			}
+	<tr>
+<td>&nbsp;</td><td><div class = "right">
+							@if (tripError == "Trip saved successfully!")
+							{
+								@tripError	
+							}
+							else
+							{
+								if (ValidateTrip())
+								{
+
+								<button class="submit" @onclick="()=>SubmitTrip()">Add Trip</button>
+								}
+								else
+								{
+										<button class="submit" disabled @onclick="()=>SubmitTrip()" >
+										<Tooltip Text=@tripError>Add Trip</Tooltip>
+										</button>
+								}
+							}
+</div></td></tr>
+</table>
+</td>
+</tr>
+</table>
 
 @code {
+	string stationError = "";
+	string tripError = "";
+	DateTime depTime;
+	DateTime retTime;
+	List<string> stationFields;
+	List<string> stationNames;
+	List<string> tripFields;
+	List<string> tripNames;
+	protected override async Task OnInitializedAsync()
+	{
+		stationNames = Station.GetInputFieldNames();
+		tripNames = Trip.GetInputNames();
+		Reset();
+	}
+	void Reset()
+	{
+		stationFields = new List<string>();
+		foreach (string str in stationNames) stationFields.Add("");
+		tripFields = new List<string>();
+		foreach (string str in tripNames) tripFields.Add("");
+	}
+	private void CheckChanged()
+	{
+		ValidateTrip();
+		ValidateStation();
+	}
+
+	bool ValidateTrip()
+	{
+		tripError = "";
+		for(int i = 0; i < tripFields.Count; i++)
+		{
+			switch (i)
+			{
+				case 0:
+				case 2:
+					if (i == 0 && depTime.Year < 2021 || i == 2 && retTime.Year < 2021)
+					{
+						tripError = "Fill out '" + tripNames[i] + "' before submitting a trip. ";
+						return false;
+					}
+					break;
+				default:
+					if (tripFields[i] == "")
+					{
+						tripError = "Fill out '" + tripNames[i] + "' before submitting a trip.";
+						return false;
+					}
+					break;
+			}
+
+		}
+
+		try {int.Parse(tripFields[4]); }
+		catch
+		{
+			tripError = "Invalid distance! Number format is '42.42'.";
+			return false;
+		}
+		try { int.Parse(tripFields[5]); }
+		catch
+		{
+
+			tripError = "Invalid duration! Number format is '42.42'.";
+			return false;
+		}
+		return true;
+	}
+	void SubmitTrip()
+	{
+		try
+		{
+			Trip t = new Trip();
+			t.distance = int.Parse(tripFields[4]);
+			t.duration = int.Parse(tripFields[5]);
+			Station station = Station.GetStationByID(int.Parse(tripFields[1]));
+			t.deptStationId = station.id;
+			t.deptStationName = station.name;
+			station = Station.GetStationByID(int.Parse(tripFields[3]));
+			t.retStationId = station.id;
+			t.retStationName = station.name;
+			t.deptTime = Trip.DateTimeToString(depTime);
+			t.retTime = Trip.DateTimeToString(depTime);
+			Console.WriteLine("Saving Trip: "+t.GetData());
+			DBManager.trips.Save(t);
+			tripError = "Trip saved successfully!";
+			Task.Run(() => Waiter());
+		}
+		catch
+		{
+			Console.WriteLine("Unknown error when saving trip!");
+		}
+
+
+	}
+	async void Waiter()
+	{
+		Thread.Sleep(1000);
+		tripError = "";
+		stationError = "";
+	}
+	void EstimateDistance()
+	{
+		int distance;
+		float groundMultiplier = 1.3f;	//HSL City Bikes couldn't fly in year 2021 -> multiply the "air distance" with 1.3 to get an estimation of the distance on land
+		distance = (int)(Station.GetStationByID(int.Parse(tripFields[1])).GetDistanceTo(Station.GetStationByID(int.Parse(tripFields[3]))));
+		distance = (int)(groundMultiplier * distance);
+		tripFields[4] = distance.ToString();
+		return;
+
+		Console.WriteLine(distance);
+		tripFields[4] = distance.ToString();
+	}
+	void CalculateTripDuration()
+	{
+		int duration = (int)((retTime - depTime).TotalSeconds);
+		tripFields[5] = duration.ToString();
+	}
+	bool ValidateStation()
+	{
+		stationError = "";
+		for (int i = 0; i < stationFields.Count; i++)
+		{
+			if (stationFields[i] == "")
+			{
+				stationError = "Fill out '" + stationNames[i] + "' before submitting a station.";
+				return false;
+			}
+		}
+		try{ int.Parse(stationFields[3]); }
+		catch
+		{
+			stationError = "Invalid '" + stationNames[3] +"'.";
+			return false;
+		}
+		try { float.Parse(stationFields[4]); }
+		catch
+		{
+			stationError = "Invalid '" + stationNames[4] +"'. Format is '42.42'.";
+			return false;
+		}
+		try { float.Parse(stationFields[5]); }
+		catch
+		{
+			stationError = "Invalid '" + stationNames[5] + "'. Format is '42.42'.";
+			return false;
+		}
+		return true;
+	}
+	void SubmitStation()
+	{
+		try
+		{
+			Station s = new Station();
+			s.fid = GetID("fid");
+			s.id = GetID("id");
+			s.name = stationFields[0];
+			s.nameSwe = stationFields[0].Replace('o', 'å');
+			s.address = s.name +", "+stationFields[1];
+			s.addressSwe = s.nameSwe + ", " + stationFields[1].Replace('o', 'å');
+			s.city = stationFields[2];
+			s.operatr = "";
+			s.citySwe = stationFields[2].Replace('o', 'å');
+			s.capacity = int.Parse(stationFields[3]);
+			s.x = float.Parse(stationFields[4]);
+			s.y = float.Parse(stationFields[5]);
+			Console.WriteLine("Saving station: "+s.GetData());
+			DBManager.stations.Save(s);
+			stationError = "Station saved successfully!";
+			Task.Run(() => Waiter());
+		}
+		catch
+		{
+			Console.WriteLine("Error when saving station!");
+		}
+
+		int GetID(string idString ="fid"){
+			DBManager.stations.ResetFilters();
+			DBManager.stations.Limit(0);
+			DBManager.stations.OrderBy(new List<string> { idString });
+			List<Station> stats = DBManager.LoadStations();
+			return (idString == "fid" ? stats[stats.Count - 1].fid : stats[stats.Count - 1].id) + 1;
+		}
+	}
 
 }

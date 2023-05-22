@@ -19,8 +19,8 @@
 <PageTitle>HSL City Bike Trips 2021</PageTitle>
 <h3>Station View</h3>
 <select class="form-control selectpicker" @bind="fid">
-	<option>--select--</option>
-		@foreach (Station station in GetAllStations())
+<option value="" disabled selected>Select a station to view</option>
+		@foreach (Station station in Station.GetAllStations())
 		{
 		<option value="@station.fid">@station.GetListName()</option>
 		
@@ -117,12 +117,7 @@
 	int filterMonth = default;
 	int fid=0;
 	static Station selectedStation;
-	List<Station> GetAllStations()
-	{
-		DBManager.stations.Limit(0);
-		DBManager.stations.ResetFilters();
-		return DBManager.LoadStations();
-	}
+
 	public void SetStation(int id)
 	{
 		fid = id;
@@ -130,7 +125,7 @@
 	}
 	void SetStation()
 	{
-		foreach (Station s in GetAllStations())
+		foreach (Station s in Station.GetAllStations())
 		{
 			if (s.fid == fid)
 			{

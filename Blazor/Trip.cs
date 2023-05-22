@@ -46,6 +46,11 @@ public partial class Trip
 		return distance >= 10 && duration >= 10;
 
 	}
+	public static string DateTimeToString(DateTime dt)
+	{
+		//Format for Database is 2021-05-31T23:57:25
+		return dt.Year + "-" + dt.Month + "-" + dt.Day + "T" + dt.Hour + ":" + dt.Minute + ":" + dt.Second;
+	}
 	static DateTime GetDateTimeFromString(string str)
 	{
 		DateTime dt = new DateTime(0);
@@ -140,6 +145,10 @@ public partial class Trip
 			return new List<string> { "Departure Station", "Return Station", "Distance (km)", "Duration (min)" };
 		else
 			return new List<string> { "deptStationName", "retStationName", "distance", "duration"};
+	}
+	public static List<string> GetInputNames()
+	{
+		return new List<string> { "Departure Time","Departure Station", "Return Time","Return Station", "Distance (m)", "Duration (s)" };
 	}
 	public void Debug()
 	{
