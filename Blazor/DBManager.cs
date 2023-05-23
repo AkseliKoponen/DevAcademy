@@ -80,6 +80,13 @@ public class DBManager
 	{
 		whereString = new List<string> { str };
 	}
+	/// <summary>
+	/// Same as OrderBy, but takes a single column as parameter
+	/// </summary>
+	public bool OrderBy(string column)
+	{
+		return OrderBy(new List<string> { column });
+	}
 
 	/// <summary>
 	/// Set the ordering according to columns
@@ -88,7 +95,6 @@ public class DBManager
 	/// </summary>
 	public  bool OrderBy(List<string> columns)
 	{
-		Console.WriteLine("Ordering by " + columns[0]);
 		if (columns == null || columns.Count == 0)
 		{
 			orderBy = "";

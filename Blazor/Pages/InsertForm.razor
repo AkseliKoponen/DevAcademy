@@ -341,7 +341,7 @@ table {
 		int GetID(string idString ="fid"){
 			DBManager.stations.ResetFilters();
 			DBManager.stations.Limit(0);
-			DBManager.stations.OrderBy(new List<string> { idString });
+			DBManager.stations.OrderBy(idString);
 			List<Station> stats = DBManager.LoadStations();
 			return (idString == "fid" ? stats[stats.Count - 1].fid : stats[stats.Count - 1].id) + 1;
 		}

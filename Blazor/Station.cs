@@ -23,6 +23,7 @@ public class Station
 	public int totalTripsTo = 0;
 	public int averageDistanceFrom=0;
 	public int averageDistanceTo=0;
+	public bool loadingInfo = true;
 	public List<Station> topStationsTo = new List<Station>();
 	public List<Station> topStationsFrom = new List<Station>();
 	public Station()
@@ -107,7 +108,7 @@ public class Station
 	}
 	public string GetListName(bool swe = false)
 	{
-		return id + " " + (swe ? nameSwe : name);
+		return (swe ? nameSwe : name)+ " – ("+id + ")";
 	}
 	public string GetData()
 	{
@@ -119,12 +120,20 @@ public class Station
 		}
 		return s.Substring(0, s.Length - 2);
 	}
+	public bool unusedStation = false;
 	public void CalculateInfo(int filterMonth = default)
 	{
+		if (loadingInfo == false && filterMonth==default)
+			return;
+		loadingInfo = true;
 		DBManager.trips.Limit(0);
 		List<Trip> tripsTo = GetJourneysTo();
 		List<Trip> tripsFrom = GetJourneysFrom();
-		
+		if (tripsTo.Count<5 && tripsFrom.Count < 5)
+		{
+			loadingInfo = false;
+			unusedStation = true;
+		}
 		if (filterMonth != default)
 		{
 			//if filtering by month, delete trips that did not depart at filterMonth
@@ -147,8 +156,10 @@ public class Station
 		totalTripsTo = tripsTo.Count;
 		averageDistanceFrom = GetAverageDistance(tripsFrom);
 		averageDistanceTo = GetAverageDistance(tripsTo);
-		topStationsTo = GetTopStations(tripsTo, false);
-		topStationsFrom = GetTopStations(tripsFrom,true);
+		topStationsFrom = GetTopStations(tripsFrom, false);
+		topStationsTo = GetTopStations(tripsTo, true);
+
+		loadingInfo = false;
 		int GetAverageDistance(List<Trip> trips)
 		{
 
@@ -167,14 +178,34 @@ public class Station
 		}
 		List<Station> GetTopStations(List<Trip> trips, bool from)
 		{
-			DBManager.stations.ResetFilters();
 			List<IDCounter> idcounters = new List<IDCounter>();
 			DBManager.stations.ResetFilters();
 			DBManager.stations.Limit(0);
-			List<Station> stations = DBManager.LoadStations();
-			foreach (Station st in stations)
+			
+			foreach (Station st in DBManager.LoadStations())
 			{
-				idcounters.Add(new IDCounter(st.id, trips.Where(t => (from?t.deptStationId:t.retStationId) == st.id).ToList().Count));
+				int matchcount = 0;
+				for (int i = trips.Count - 1; i >= 0; i--)
+				{
+					if (from)
+					{
+						if (trips[i].deptStationId == st.id)
+						{
+							matchcount++;
+							trips.RemoveAt(i);
+						}
+					}
+					else
+					{
+						if (trips[i].retStationId == st.id)
+						{
+							matchcount++;
+							trips.RemoveAt(i);
+						}
+					}
+				}
+				idcounters.Add(new IDCounter(st.id, matchcount));
+				//idcounters.Add(new IDCounter(st.id, trips.Where(t => (from?t.deptStationId:t.retStationId) == st.id).ToList().Count));
 			}
 			idcounters.Sort(IDCounter.CompareByCount);
 			List<Station> sts = new List<Station>();
@@ -195,7 +226,7 @@ public class Station
 			return stations[0];
 		return null;
 	}
-	struct IDCounter
+	public struct IDCounter
 	{
 		public int id;
 		public int count;
@@ -209,10 +240,13 @@ public class Station
 			id = _id;
 			count = _count;
 		}
-
 		public static int CompareByCount(IDCounter idc1, IDCounter idc2)
 		{
 			return idc1.count.CompareTo(idc2.count);
+		}
+		public void Log()
+		{
+			Console.WriteLine("StationID "+id+" count is "+count);
 		}
 	}
 	List<Trip> GetJourneysFrom()
@@ -262,6 +296,7 @@ public class Station
 	{
 		DBManager.stations.Limit(0);
 		DBManager.stations.ResetFilters();
+		DBManager.stations.OrderBy("name");
 		return DBManager.LoadStations();
 	}
 }

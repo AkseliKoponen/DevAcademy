@@ -1,5 +1,13 @@
 ﻿@page "/listView"
+@inject NavigationManager NavManager
 <style>
+	.stationCell{
+		border: none;
+  background-color: white;
+  color: black;
+  font-size: 16px;
+  cursor: pointer;
+	}
 	.toggleOff {
 border: 2px solid black;
   background-color: white;
@@ -42,7 +50,7 @@ h3{
 <PageTitle>HSL City Bike Stations</PageTitle>
 <p>
 <h3>
-Viewing <b>bike @db.table.ToLower()</b> @GetPageString() (of @db.matchCount total).
+Viewing <b>bike @db.table.ToLower()</b> @GetPageString() (of @db.matchCount.ToString("###,#") total).
 @if (db == DBManager.stations)
 {
 	<button @onclick="()=>ChangeTable()" class="toggleOff">View Trips</button>
@@ -149,10 +157,13 @@ else
 				{
 					foreach (Station station in displayedStations)
 					{
-						<tr>
-							@foreach (string str in station.GetListData())
+						Station stat = station;
+						<tr>			
+							@foreach (string str in stat.GetListData())
 							{
-								<td>@str</td>
+								<td><button class="stationCell" @onclick='()=>StationInfo(stat)'>
+										@str
+								</button></td>
 							}
 						</tr>
 					}
@@ -170,7 +181,11 @@ else
 	private int currentPage = 0;
 	private int pageDisplayCount = 15;
 	List<string> buttonNames = new List<string> { "Departure Station", "Return Station", "Distance (km)", "Duration (min)" };
-
+	void StationInfo(Station stat)
+	{
+		StationView.fid = stat.fid;
+		NavManager.NavigateTo("/stationView");
+	}
 	protected override async Task OnInitializedAsync()
 	{
 		DefaultSettings();
@@ -190,7 +205,7 @@ else
 	}
 	bool IsNumberField(int index)
 	{
-		return (db == DBManager.trips && index > 2) || (db == DBManager.stations && (index == 0 || index == 3));
+		return (db == DBManager.trips && index >= 2) || (db == DBManager.stations && (index == 0 || index == 3));
 	}
 	void SetSearch(int index)
 	{
@@ -263,7 +278,7 @@ else
 	}
 	void Clear()
 	{
-		db.OrderBy(null);
+		db.OrderBy(new List<string>());
 		orderIndex = -1;
 		DefaultButtonNames();
 	}
