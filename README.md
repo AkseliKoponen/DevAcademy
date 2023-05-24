@@ -1,4 +1,4 @@
-![Logo of the project](https://raw.githubusercontent.com/AkseliKoponen/DevAcademy/main/logo.png)
+![Logo of the project](https://raw.githubusercontent.com/AkseliKoponen/DevAcademy/main/Logo.png)
 
 # City Bike Data 2021
 > An exercise for Solita DevAcademy by Akseli Koponen
