@@ -21,6 +21,9 @@ public partial class Trip
 
 	public int? duration { get; set; }
 	public Trip() { }
+	/// <summary>
+	/// Creates a trip by slicing the .csv <paramref name="line"/> into values
+	/// </summary>
 	public Trip(string line)
 	{
 		List<string> data = CSVReader.LineToList(line);
@@ -41,16 +44,17 @@ public partial class Trip
 			}
 		}
 	}
-	public bool Validate()
-	{
-		return distance >= 10 && duration >= 10;
-
-	}
+	/// <summary>
+	/// Converts <paramref name="dt"/> to a string matching the format in database
+	/// </summary>
 	public static string DateTimeToString(DateTime dt)
 	{
 		//Format for Database is 2021-05-31T23:57:25
 		return dt.Year + "-" + dt.Month + "-" + dt.Day + "T" + dt.Hour + ":" + dt.Minute + ":" + dt.Second;
 	}
+	/// <summary>
+	/// Gets a datetime from a <paramref name="str"/> with the format used in the database
+	/// </summary>
 	static DateTime GetDateTimeFromString(string str)
 	{
 		DateTime dt = new DateTime(0);
@@ -112,15 +116,26 @@ public partial class Trip
 			}
 		}
 	}
+	/// <summary>
+	/// Gets distance in a readable kilometer format
+	/// </summary>
 	public string GetDistanceKm()
 	{
 		float f = (float)distance / (float)1000;
 		return f.ToString("0.00") + " km";
 	}
+
+	/// <summary>
+	/// Gets duration in a readable minute format
+	/// </summary>
 	public string GetDurationMin()
 	{
 		return ((float)duration / (float)60).ToString("0.0") + " min";
 	}
+
+	/// <summary>
+	/// Get all data in one .csv style line
+	/// </summary>
 	public string GetData()
 	{
 		string s = "";
@@ -131,14 +146,24 @@ public partial class Trip
 		}
 		return s.Substring(0, s.Length - 2);
 	}
+	/// <summary>
+	/// Get departure time in DateTime
+	/// </summary>
 	public DateTime GetDeptTime()
 	{
 		return GetDateTimeFromString(deptTime);
 	}
+	/// <summary>
+	/// Get return time in DateTime
+	/// </summary>
 	public DateTime GetRetTime()
 	{
 		return GetDateTimeFromString(retTime);
 	}
+	/// <summary>
+	///	Get the names of columns displayed in ListView.
+	///	<br>Set <paramref name="displayName"/> as false to get the names of the corresponding properties</br>
+	/// </summary>
 	public static List<string> GetColumns(bool displayName = true)
 	{
 		if(displayName)
@@ -146,17 +171,13 @@ public partial class Trip
 		else
 			return new List<string> { "deptStationName", "retStationName", "distance", "duration"};
 	}
+
+	/// <summary>
+	///	Get the names of the properties assigned in InsertForm
+	/// </summary>
 	public static List<string> GetInputNames()
 	{
 		return new List<string> { "Departure Time","Departure Station", "Return Time","Return Station", "Distance (m)", "Duration (s)" };
 	}
-	public void Debug()
-	{
-		foreach (PropertyInfo fi in GetType().GetProperties())
-		{
-			object obj = fi.GetValue(this);
-			string str = fi.Name + ": " + (obj != null ? obj.ToString() : "NULL");
-			Console.WriteLine(str);
-		}
-	}
+
 }

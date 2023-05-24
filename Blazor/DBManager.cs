@@ -8,7 +8,11 @@ using Dapper;
 
 public class DBManager
 {
-	public static void SetTable(bool trip)
+	/// <summary>
+	/// Changes the currentTable to either trips or stations
+	/// </summary>
+	/// <param name="trip">If true set to trips. Else set to stations.</param>
+	public static void ToggleTable(bool trip)
 	{
 		currentTable = trip?trips:stations;
 	}
@@ -16,6 +20,11 @@ public class DBManager
 	public static DBManager trips { get; private set; } = new DBManager("TRIPS");
 	public static DBManager stations { get; private set; } = new DBManager("STATIONS");
 	public string table { get; private set; }
+
+	/// <summary>
+	/// Constructor for the DBManager, only sets the table
+	/// </summary>
+	/// <param name="_table">Which table should be accessed</param>
 	DBManager(string _table)
 	{
 		table = _table;
@@ -25,6 +34,7 @@ public class DBManager
 	List<string> whereString = new List<string>(); 
 	string limit = " LIMIT 30";
 	public int matchCount = 0;
+
 	/// <summary>
 	/// Clear order and where.
 	/// </summary>
@@ -33,7 +43,11 @@ public class DBManager
 		orderBy = "";
 		whereString = new List<string>();
 	}
-	public  void RemoveFilterColumn(string column)
+	/// <summary>
+	/// Returns the list of conditions in whereString as a single string.
+	/// </summary>
+	/// <param name="column">Removes a whereString containing this string if it exists</param>
+	public void RemoveFilterColumn(string column)
 	{
 		for(int i = 0; i < whereString.Count; i++)
 		{
@@ -44,7 +58,11 @@ public class DBManager
 			}
 		}
 	}
-	 string GetWhereString(bool and = true)
+	/// <summary>
+	/// Returns the list of conditions in whereString as a single string.
+	/// </summary>
+	/// <param name="and">If true combine the strings with AND, else combine them with OR.</param>
+	string GetWhereString(bool and = true)
 	{
 		if (whereString.Count > 0)
 		{
@@ -90,10 +108,10 @@ public class DBManager
 
 	/// <summary>
 	/// Set the ordering according to columns
-	/// If the order is already the same, reverse the order (from descending to ascending) and return false
-	/// Return true if not the same order or columns is null
+	/// <br>If the order is already the same, reverse the order (from descending to ascending) and return false</br>
+	/// <br>Return true if not the same order or columns is null</br>
 	/// </summary>
-	public  bool OrderBy(List<string> columns)
+	public bool OrderBy(List<string> columns)
 	{
 		if (columns == null || columns.Count == 0)
 		{
@@ -137,7 +155,7 @@ public class DBManager
 	}
 	/// <summary>
 	/// Load entries from the database with conditions that have been set by Where() and OrderBy().
-	/// The size of the returned list is limited by Limit()
+	/// <br>The size of the returned list is limited by Limit()</br>
 	/// </summary>
 	public static List<Trip> LoadTrips()
 	{
@@ -149,7 +167,7 @@ public class DBManager
 		}
 	}   /// <summary>
 		/// Load entries from the database with conditions that have been set by Where() and OrderBy().
-		/// The size of the returned list is limited by Limit()
+		/// <br>The size of the returned list is limited by Limit()</br>
 		/// </summary>
 	public static List<Station> LoadStations()
 	{
@@ -164,7 +182,8 @@ public class DBManager
 	/// <summary>
 	/// Get the total count of entries matching the criteria
 	/// </summary>
-	public  int GetCount(bool _limit = true)
+	/// <param name="_limit">If true, limit the count by the assigned limiter. Else get an unlimited count.</param>
+	public int GetCount(bool _limit = true)
 	{
 		using (IDbConnection cnn = new SQLiteConnection(connStr))
 		{
@@ -174,7 +193,7 @@ public class DBManager
 		}
 	}
 	/// <summary>
-	/// Saves a new trip into the database
+	/// Saves a new entry into the database
 	/// </summary>
 	public void Save(object obj)
 	{
@@ -226,12 +245,20 @@ public class DBManager
 
 		}
 	}
+
+	/// <summary>
+	/// Delete bad entries from the database.
+	/// <br>This method was used once to trim the database and is no longer required.</br>
+	/// </summary>
 	public void TrimDatabase()
 	{
-		using (IDbConnection cnn = new SQLiteConnection(connStr))
+		if (table == "TRIPS")
 		{
-			cnn.Execute("delete from "+table+" where distance < 10");
-			cnn.Execute("delete from "+table+" where duration < 10");
+			using (IDbConnection cnn = new SQLiteConnection(connStr))
+			{
+				cnn.Execute("delete from " + table + " where distance < 10");
+				cnn.Execute("delete from " + table + " where duration < 10");
+			}
 		}
 	}
 	#endregion

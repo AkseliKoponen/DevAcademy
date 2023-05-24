@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 public class Station
 {
@@ -19,6 +20,7 @@ public class Station
 	public float y{get;set;}
 
 	public Vector2 location;
+	#region Additional Info for StationView
 	public int totalTripsFrom = 0;
 	public int totalTripsTo = 0;
 	public int averageDistanceFrom=0;
@@ -26,10 +28,16 @@ public class Station
 	public bool loadingInfo = true;
 	public List<Station> topStationsTo = new List<Station>();
 	public List<Station> topStationsFrom = new List<Station>();
+	public bool unusedStation = false;  //if there are <5 trips linked to this station, mark this station as "unused"
+	#endregion
+
 	public Station()
 	{
 
 	}
+	/// <summary>
+	/// Creates a station by slicing the .csv <paramref name="line"/> into values
+	/// </summary>
 	public Station(string line)
 	{
 		List<string> data = CSVReader.LineToList(line);
@@ -80,11 +88,11 @@ public class Station
 			return temp;
 		}
 	}
-	public Vector2 GetLocation()
-	{
-		return new Vector2(x,y);
-	}
 
+
+	/// <summary>
+	/// Get distance from this station to the <paramref name="other"/> station
+	/// </summary>
 	public double GetDistanceTo(Station other)
 	{
 
@@ -102,14 +110,17 @@ public class Station
 		return num5;
 		
 	}
-	public List<string> GetDisplayedData()
-	{
-		return new List<string> { id.ToString(), name, address, city, operatr, capacity.ToString(), location.ToString("00.00") };
-	}
+
+	/// <summary>
+	/// Get name with id
+	/// </summary>
 	public string GetListName(bool swe = false)
 	{
 		return (swe ? nameSwe : name)+ " – ("+id + ")";
 	}
+	/// <summary>
+	/// Get all data in one string
+	/// </summary>
 	public string GetData()
 	{
 		string s = "";
@@ -120,7 +131,11 @@ public class Station
 		}
 		return s.Substring(0, s.Length - 2);
 	}
-	public bool unusedStation = false;
+
+	/// <summary>
+	/// Calculate the additional info for StationView Page.
+	/// <br>Specify <paramref name="filterMonth"/> to get data only from a specific month.</br>
+	/// </summary>
 	public void CalculateInfo(int filterMonth = default)
 	{
 		if (loadingInfo == false && filterMonth==default)
@@ -218,6 +233,10 @@ public class Station
 			return sts;
 		}
 	}
+	
+	/// <summary>
+	/// Get a station whose id matches the given <paramref name="id"/>.
+	/// </summary>
 	public static Station GetStationByID(int id)
 	{
 		DBManager.stations.SetWhere("id = " + id);
@@ -226,6 +245,10 @@ public class Station
 			return stations[0];
 		return null;
 	}
+
+	/// <summary>
+	/// Struct for counting how many trips are connected to a station with a specific ID
+	/// </summary>
 	public struct IDCounter
 	{
 		public int id;
@@ -240,6 +263,10 @@ public class Station
 			id = _id;
 			count = _count;
 		}
+
+		/// <summary>
+		/// Used for sorting a list of IDCounters by their count
+		/// </summary>
 		public static int CompareByCount(IDCounter idc1, IDCounter idc2)
 		{
 			return idc1.count.CompareTo(idc2.count);
@@ -249,34 +276,60 @@ public class Station
 			Console.WriteLine("StationID "+id+" count is "+count);
 		}
 	}
+
+	/// <summary>
+	/// Returns all trips departing from this station
+	/// </summary>
 	List<Trip> GetJourneysFrom()
 	{
 		DBManager.trips.ResetFilters();
 		DBManager.trips.SetWhere("deptStationId = " + id);
 		return DBManager.LoadTrips();
 	}
+
+	/// <summary>
+	/// Get the amount of trips departing from this station.
+	/// <br>Faster than GetJourneysFrom().count</br>
+	/// </summary>
 	public int GetCountFrom()
 	{
 		DBManager.trips.ResetFilters();
 		DBManager.trips.SetWhere("deptStationId = " + id);
 		return DBManager.trips.GetCount();
 	}
+
+	/// <summary>
+	/// Get the amount of trips ending at this station
+	/// <br>Faster than GetJourneysTo().count</br>
+	/// </summary>
 	public int GetCountTo()
 	{
 		DBManager.trips.ResetFilters();
 		DBManager.trips.SetWhere("retStationId = " + id);
 		return DBManager.trips.GetCount();
-	}
+	} 
+	/// <summary>
+	/// Returns all trips ending at this station
+	/// </summary>
 	List<Trip> GetJourneysTo()
 	{
 		DBManager.trips.ResetFilters();
 		DBManager.trips.SetWhere("retStationId = " + id);
 		return DBManager.LoadTrips();
 	}
+
+	/// <summary>
+	///	Get the data to be displayed in ListView
+	/// </summary>
 	public List<string> GetListData()
 	{
 		return new List<string> { id.ToString(), name, address, capacity.ToString() };
 	}
+
+	/// <summary>
+	///	Get the names of columns displayed in ListView.
+	///	<br>Set <paramref name="displayName"/> as false to get the names of the corresponding properties</br>
+	/// </summary>
 	public static List<string> GetColumnNames(bool displayName = true)
 	{
 		if (displayName)
@@ -284,14 +337,23 @@ public class Station
 		else
 			return new List<string> { "id", "name", "address", "capacity" };
 	}
+	/// <summary>
+	///	Get the names of the fields assigned in InsertForm page
+	/// </summary>
 	public static List<string> GetInputFieldNames()
 	{
 		return new List<string> { "Name", "Address", "City", "Capacity", "Position (X)", "Position (Y)" };
 	}
+	/// <summary>
+	/// Used when sorting a list of Stations
+	/// </summary>
 	public static int CompareByID(Station s1, Station s2)
 	{
 		return s1.id.CompareTo(s2.id);
 	}
+	/// <summary>
+	///	Get ALL stations in DBManager
+	/// </summary>
 	public static List<Station> GetAllStations()
 	{
 		DBManager.stations.Limit(0);

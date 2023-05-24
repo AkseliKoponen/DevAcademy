@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 public static class CSVReader
 {
+	#region Unused
 	public static async Task ReadLocal(StreamReader reader)
 	{
 		List<Station> stations = new List<Station>();
@@ -22,6 +23,10 @@ public static class CSVReader
 		stations.Sort(Station.CompareByID);
 		//foreach (Station station in Station.stations)DBManager.stations.Save(station);
 	}
+	#endregion
+	/// <summary>
+	///	Converts a .csv <paramref name="line"/> into a list of values
+	/// </summary>
 	public static List<string> LineToList(string line)
 	{
 		List<string> list = new List<string>();

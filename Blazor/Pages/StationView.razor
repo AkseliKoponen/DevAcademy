@@ -150,11 +150,19 @@
 	public static int fid=0;
 	Station selectedStation;
 
+	/// <summary>
+	///	Sets the selectedStation to a station with a matching <paramref name="id"/>.
+	/// </summary>
 	public void SetStation(int id)
 	{
 		fid = id;
 		SetStation();
 	}
+
+	/// <summary>
+	///	Sets the selectedStation according to fid and calculates the additional information (average distance etc.) about the station.
+	///	<br> While calculating the page will display a loading icon.</br>
+	/// </summary>
 	public async void SetStation()
 	{
 		foreach (Station s in Station.GetAllStations())
