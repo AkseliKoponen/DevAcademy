@@ -3,27 +3,25 @@
 # City Bike Data 2021
 > An exercise for Solita DevAcademy by Akseli Koponen
 
-A Blazor web app for displaying HSL City Bike Data from the summer of 2021. Created with Visual Studio using Blazor Template.
+A Blazor web app for displaying HSL City Bike Data from the summer of 2021.
+Created with Visual Studio using Blazor Template.
 
 ## Installing / Getting started
 
 Go to https://devacademyakselikoponen.azurewebsites.net/ to view the app in Azure.
 
-The app may run slowly on cloud but you may also open the project in visual studio. See Initial Configuration
-
-### Initial Configuration
-
+The app may run slowly on cloud but you can also open the project in visual studio by following these steps.
 >1. Download the database from https://drive.google.com/file/d/1qTyV0VRHPn6THy8NyXUy_2p3g7iRxaSH/view?usp=sharing
 >2. Move the database to the project folder (DevAcademy/Blazor/)
 
 
 ## Features
 
-*Filter and search through the bike trips and stations.
-*View additional information about specific stations
-*Add new trips and stations to the database
-*Tooltips
-*Automatic tools to get distance and duration when adding new trips.
+* Filter and search through the bike trips and stations.
+* View additional information about specific stations
+* Add new trips and stations to the database
+* Tooltips
+* Automatic tools to get distance and duration when adding new trips.
 
 ## Notes
 biketrips.db SQLite database was created by combining the .csv files into one and then importing them as a table to the database.
