@@ -269,7 +269,7 @@ public class Station
 		/// </summary>
 		public static int CompareByCount(IDCounter idc1, IDCounter idc2)
 		{
-			return idc1.count.CompareTo(idc2.count);
+			return idc2.count.CompareTo(idc1.count);
 		}
 		public void Log()
 		{
