@@ -62,9 +62,10 @@ Viewing <b>bike @db.table.ToLower()</b> @GetPageString() (of @db.matchCount.ToSt
 </h3>
 </p>
 
-@if (displayedTrips == null && displayedStations == null)
+@if (loading)
 {
 			<p><em>Loading...</em></p>
+			<div class="spinner"></div>
 }
 else
 {
@@ -182,6 +183,7 @@ else
 @code {
 	DBManager db = DBManager.stations;
 	List<string> filters = new List<string> { "", "", "", "" };
+	bool loading = false;
 	private List<Trip>? displayedTrips;
 	private List<Station>? displayedStations;
 	private int currentPage = 0;
@@ -283,12 +285,15 @@ else
 	/// <summary>
 	/// Loads new entries to displayedTrips or -Stations
 	/// </summary>
-	void UpdateEntries()
+	async void UpdateEntries()
 	{
+		loading = true;
 		if (db == DBManager.trips)
-			displayedTrips = DBManager.LoadTrips();
+			await Task.Run(()=>displayedTrips = DBManager.LoadTrips());
 		else if (db == DBManager.stations)
-			displayedStations = DBManager.LoadStations();
+			await Task.Run(()=>displayedStations = DBManager.LoadStations());
+		loading = false;
+		StateHasChanged();
 	}
 
 	/// <summary>
