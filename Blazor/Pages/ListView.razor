@@ -49,25 +49,31 @@ h3{
 
 <PageTitle>HSL City Bike Stations</PageTitle>
 <p>
-<h3>
-Viewing <b>bike @db.table.ToLower()</b> @GetPageString() (of @db.matchCount.ToString("###,#") total).
-		@if (db == DBManager.stations)
+	<h3>
+		@if (!loading)
 		{
-		<button @onclick="()=>ChangeTable()" class="toggleOff">View Trips</button>
-		}
-		else
-		{
-		<button @onclick="()=>ChangeTable()" class="toggleOff">View Stations</button>
-		}
-</h3>
+
+			<div>
+				Viewing <b>bike @db.table.ToLower()</b> @GetPageString() (of @db.matchCount.ToString("###,#") total).
+				@if (db == DBManager.stations)
+				{
+				<button @onclick="()=>ChangeTable()" class="toggleOff">View Trips</button>
+				}
+				else
+				{
+				<button @onclick="()=>ChangeTable()" class="toggleOff">View Stations</button>
+				}
+				</div>
+	}
+	else
+	{
+			<div>Loading <b>bike @db.table.ToLower()</b>...</div>
+	}
+	
+	</h3>
 </p>
 
-@if (loading)
-{
-			<p><em>Loading...</em></p>
-			<div class="spinner"></div>
-}
-else
+@if(true)
 {
 			<p>
 		@if (currentPage > 0)
@@ -147,6 +153,14 @@ else
 				</tr>
 				</thead>
 				<tbody>
+
+	@if (loading)
+	{
+			<p><em>Loading...</em></p>
+			<div class="spinner"></div>
+	}
+	else
+	{
 			@if (db == DBManager.trips)
 			{
 				@foreach (Trip trip in displayedTrips)
@@ -175,6 +189,7 @@ else
 									</tr>
 				}
 			}
+		}
 				</tbody>
 			</table>
 
@@ -222,6 +237,8 @@ else
 	/// </summary>
 	void ChangeTable()
 	{
+		if (loading)
+			return;
 		DBManager.ToggleTable(db == DBManager.stations);
 		DefaultSettings();
 	}
@@ -241,6 +258,8 @@ else
 	/// <param name="index">Which column to search</param>
 	void SetSearch(int index)
 	{
+		if (loading)
+			return;
 		string column = db == DBManager.trips ? Trip.GetColumns(false)[index] : Station.GetColumnNames(false)[index];
 		string criteria = filters[index];
 		string str = "";
@@ -336,6 +355,8 @@ else
 	/// <param name="columnIndex">Which column to order by</param>
 	void OrderBy(int columnIndex)
 	{
+		if (loading)
+			return;
 		ChangePage(-currentPage);
 		displayedTrips = new List<Trip>();
 		displayedStations = new List<Station>();
