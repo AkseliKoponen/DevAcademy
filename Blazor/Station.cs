@@ -3,34 +3,120 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
+/// <summary>
+/// Stations are one of the values stored in the database.
+/// </summary>
 public class Station
 {
-	
+	/// <summary>
+	/// fid of the station(Database value)
+	/// </summary>
 	public int fid{get;set;}
-	public int id{get;set;}
-	public string name{get;set;}
-	public string nameSwe{get;set;}
-	public string address{get;set;}
-	public string addressSwe{get;set;}
-	public string city{get;set;}
-	public string citySwe{get;set;}
-	public string operatr{get;set;}
-	public int capacity{get;set;}
-	public float x{get;set;}
-	public float y{get;set;}
 
-	public Vector2 location;
+	/// <summary>
+	/// id of the station(Database value)
+	/// </summary>
+	public int id{get;set;}
+
+	/// <summary>
+	/// name of the station (Database value)
+	/// </summary>
+	public string name{get;set; }
+
+	/// <summary>
+	/// name of the station in swedish (Database value)
+	/// </summary>
+	public string nameSwe{get;set; }
+
+	/// <summary>
+	/// address of the station. (Database value)
+	/// <br>Note: contains a comma and usually follow the format of (station name, street address)</br>
+	/// </summary>
+	public string address{get;set; }
+
+	/// <summary>
+	/// address of the station in swedish. (Database value)
+	/// <br>Note: contains a comma and usually follow the format of (station name, street address)</br>
+	/// </summary>
+	public string addressSwe{get;set; }
+
+	/// <summary>
+	/// The name of the city where the station exists (Database value)
+	/// </summary>
+	public string city{get;set; }
+
+	/// <summary>
+	/// The swedish name of the city where the station exists (Database value)
+	/// </summary>
+	public string citySwe{get;set; }
+
+	/// <summary>
+	/// The operator of the station (Database value)
+	/// <br>Note:Most records do not have an operator</br>
+	/// </summary>
+	public string operatr{get;set; }
+
+	/// <summary>
+	/// How many bikes can the station hold (Database value)
+	/// </summary>
+	public int capacity{get;set; }
+
+	/// <summary>
+	/// Latitude of the geocoordinates of the station (Database value)
+	/// </summary>
+	public float x{get;set; }
+
+	/// <summary>
+	/// Longitude of the geocoordinates of the station (Database value)
+	/// </summary>
+	public float y{get;set; }
+
 	#region Additional Info for StationView
+
+	/// <summary>
+	/// The amount of trips departing from this station
+	/// </summary>
 	public int totalTripsFrom = 0;
+
+	/// <summary>
+	/// The amount of trips arriving to this station
+	/// </summary>
 	public int totalTripsTo = 0;
+
+	/// <summary>
+	/// The average distance traveled when departing from this station
+	/// </summary>
 	public int averageDistanceFrom=0;
+
+	/// <summary>
+	/// The average distance traveled when returning to this station
+	/// </summary>
 	public int averageDistanceTo=0;
+
+	/// <summary>
+	/// Used by StationView to see if CalculateInfo() is still running
+	/// </summary>
 	public bool loadingInfo = true;
+
+	/// <summary>
+	/// Most common destinations when departing from this station
+	/// </summary>
 	public List<Station> topStationsTo = new List<Station>();
+
+	/// <summary>
+	/// Most common origin stations when arriving to this station
+	/// </summary>
 	public List<Station> topStationsFrom = new List<Station>();
-	public bool unusedStation = false;  //if there are <5 trips linked to this station, mark this station as "unused"
+
+	/// <summary>
+	/// if there are less than 5 trips linked to this station, mark this station as "unused"
+	/// </summary>
+	public bool unusedStation = false;
 	#endregion
 
+	/// <summary>
+	/// 
+	/// </summary>
 	public Station()
 	{
 
@@ -40,7 +126,7 @@ public class Station
 	/// </summary>
 	public Station(string line)
 	{
-		List<string> data = CSVReader.LineToList(line);
+		List<string> data = DBManager.LineToList(line);
 		PropertyInfo[] pis = GetType().GetProperties();
 		data = RemoveIrregs(data);
 		//Irregularities in station CSV file: the finnish address field contains a comma -> merge data[4] and [5]
@@ -77,7 +163,6 @@ public class Station
 					break;
 			}
 		}
-		location = new Vector2(x, y);
 		List<string> RemoveIrregs(List<string> originalData)
 		{
 			List<string> temp = new List<string>();
@@ -251,13 +336,21 @@ public class Station
 	/// </summary>
 	public struct IDCounter
 	{
+		/// <summary>
+		/// ID of the station
+		/// </summary>
 		public int id;
+
+		/// <summary>
+		/// How many stations match the ID
+		/// </summary>
 		public int count;
-		public IDCounter()
-		{
-			id = 0;
-			count = 0;
-		}
+
+		/// <summary>
+		/// Constructor for IDCounter
+		/// </summary>
+		/// <param name="_id">id</param>
+		/// <param name="_count">count</param>
 		public IDCounter(int _id,int _count)
 		{
 			id = _id;
@@ -270,10 +363,6 @@ public class Station
 		public static int CompareByCount(IDCounter idc1, IDCounter idc2)
 		{
 			return idc2.count.CompareTo(idc1.count);
-		}
-		public void Log()
-		{
-			Console.WriteLine("StationID "+id+" count is "+count);
 		}
 	}
 

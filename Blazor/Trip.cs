@@ -2,31 +2,61 @@
 using System.Collections.Generic;
 using System.Reflection;
 
+/// <summary>
+/// Trips are one of the values stored in the database.
+/// </summary>
 public partial class Trip
 {
-
+	/// <summary>
+	/// DepartureTime string that can be converted to DateTime format(Database value)
+	/// </summary>
 	public string? deptTime { get; set; }
 
+	/// <summary>
+	/// ReturnTime string that can be converted to DateTime format (Database value)
+	/// </summary>
 	public string? retTime { get; set; }
 
+	/// <summary>
+	/// ID of the departure <b>station</b> (Database value)
+	/// </summary>
 	public int? deptStationId { get; set; }
 
+	/// <summary>
+	/// Name of the departure <b>station</b> (Database value)
+	/// </summary>
 	public string? deptStationName { get; set; }
 
+	/// <summary>
+	/// ID of the return <b>station</b> (Database value)
+	/// </summary>
 	public int? retStationId { get; set; }
 
+	/// <summary>
+	/// Name of the return <b>station</b> (Database value)
+	/// </summary>
 	public string? retStationName { get; set; }
-
+	/// <summary>
+	/// Distance traveled during the trip in <b>meters</b> (Database value)
+	/// </summary>
 	public int? distance { get; set; }
 
-	public int? duration { get; set; }
-	public Trip() { }
 	/// <summary>
-	/// Creates a trip by slicing the .csv <paramref name="line"/> into values
+	/// The duration of the trip in <b>seconds</b> (Database value)
+	/// </summary>
+	public int? duration { get; set; }
+
+	/// <summary>
+	/// Default Constructor
+	/// </summary>
+	public Trip() { }
+
+	/// <summary>
+	/// Creates a trip by slicing the .csv <paramref name="line"/> into values. Not used by the database.
 	/// </summary>
 	public Trip(string line)
 	{
-		List<string> data = CSVReader.LineToList(line);
+		List<string> data = DBManager.LineToList(line);
 		PropertyInfo[] fis = GetType().GetProperties();
 		for (int i = 0; i < data.Count && i < fis.Length; i++)
 		{

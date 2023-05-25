@@ -1,9 +1,15 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-
+/// <summary>
+/// Launches the web app
+/// </summary>
 public class Program
 {
+	/// <summary>
+	/// Launches the web app
+	/// </summary>
+	/// <param name="args">Arguments for WebApplication.CreateBuilder</param>
 	public static void Main(string[] args)
 	{
 		var builder = WebApplication.CreateBuilder(args);

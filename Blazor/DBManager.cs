@@ -6,6 +6,10 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.Arm;
 using Dapper;
 
+/// <summary>
+/// DBManager is the interface for connecting to the database.
+/// <br>Use <b>DBManager.stations</b> to access stations and <b>DBManager.trips</b> to access trips.</br>
+/// </summary>
 public class DBManager
 {
 	/// <summary>
@@ -16,9 +20,22 @@ public class DBManager
 	{
 		currentTable = trip?trips:stations;
 	}
+	/// <summary>
+	/// Keeps track of which table is displayed in ListView page
+	/// </summary>
 	public static DBManager currentTable;
+	/// <summary>
+	/// The TRIPS table in the database
+	/// </summary>
 	public static DBManager trips { get; private set; } = new DBManager("TRIPS");
+	/// <summary>
+	/// The STATIONS table in the database
+	/// </summary>
 	public static DBManager stations { get; private set; } = new DBManager("STATIONS");
+
+	/// <summary>
+	/// Which table to connect to
+	/// </summary>
 	public string table { get; private set; }
 
 	/// <summary>
@@ -33,6 +50,11 @@ public class DBManager
 	string orderBy = "";
 	List<string> whereString = new List<string>(); 
 	string limit = " LIMIT 30";
+
+	/// <summary>
+	/// The amount of records matching the set criteria.
+	/// <br>Using this is faster than reloading all the records from the database.</br>
+	/// </summary>
 	public int matchCount = 0;
 
 	/// <summary>
@@ -215,6 +237,30 @@ public class DBManager
 				cnn.Execute("insert into " + table + " values (" + s.GetData() + ")", s);
 			}
 		}
+	}
+
+	/// <summary>
+	///	Converts a .csv <paramref name="line"/> into a list of values
+	/// </summary>
+	public static List<string> LineToList(string line)
+	{
+		List<string> list = new List<string>();
+		char separator = ',';
+
+		while (line.Contains(separator))
+		{
+			string s = line.Substring(0, line.IndexOf(separator));
+			bool quotes = (s.StartsWith('"') && line.Substring(1).Contains('"'));
+			if (quotes)
+			{
+				s = '"' + line.Substring(1, line.Substring(1).IndexOf('"') + 1);
+			}
+			line = line.Substring(s.Length + 1);
+			if (quotes) s = s.Substring(1, s.Length - 2);
+			list.Add(s);
+		}
+		list.Add(line);
+		return list;
 	}
 	#region Old and Unused
 	/// <summary>
