@@ -10,7 +10,13 @@ Created with Visual Studio using Blazor Template.
 
 Go to https://devacademyakselikoponen.azurewebsites.net/ to view the app in Azure.
 
-The app may run slowly on cloud but you can also open the project in visual studio by following these steps.
+One may also run a build locally as the database is a bit sluggish online.
+>1. Download and extract Blazor Build.zip from https://drive.google.com/file/d/1O4A5qQYfFyJvFaGUHkl8bR6d9zaG_pk3/view?usp=sharing
+>2. Run Blazor.exe
+>3. Open a web browser and go to http://localhost:5000
+> Note: If the above website does not work, see if Blazor.exe opened another port on the second row ("Now listening on: http:localhost:XXXX")
+
+One can open and run the project through visual studio, but one has to download the database manually
 >1. Download the database from https://drive.google.com/file/d/1qTyV0VRHPn6THy8NyXUy_2p3g7iRxaSH/view?usp=sharing
 >2. Move the database to the project folder (DevAcademy/Blazor/)
 
@@ -23,12 +29,21 @@ The app may run slowly on cloud but you can also open the project in visual stud
 * Tooltips
 * Automatic tools to get distance and duration when adding new trips.
 
+When viewing the records in database one can filter them by each column. To initiate the search, click on the magnifying glass icon.
+On number columns one may for example use syntax like ">5" to get all records with a distance greater than 5km.
+To clear filters simply search with an empty field.
+
+When viewing information about a specific station one may filter the information by months by clicking on the month buttons.
+
+One may add new trips and stations to the database.
+Note: The newly added stations lack connected trips and thus are unable to provide details like average trip length.
+
 ## Notes
 biketrips.db SQLite database was created by combining the .csv files into one and then importing them as a table to the database.
 The original .csv files contained duplicates of EVERY trip. The duplicates were deleted from the database file.
 
 ##Links
-You may contact me at akseli.koponen42@gmail.com. I am willing to create more code in exchange for food or even money.
+One may contact me at akseli.koponen42@gmail.com. I am willing to create more code in exchange for food or even money.
 
 ## Contributing and Developing
 

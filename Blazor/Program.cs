@@ -18,7 +18,7 @@ public class Program
 		builder.Services.AddRazorPages();
 		builder.Services.AddServerSideBlazor();
 		var app = builder.Build();
-		
+		/*
 		// Configure the HTTP request pipeline.
 		if (!app.Environment.IsDevelopment())
 		{
@@ -28,7 +28,7 @@ public class Program
 		}
 		
 		app.UseHttpsRedirection();
-
+		*/
 		app.UseStaticFiles();
 
 		app.UseRouting();

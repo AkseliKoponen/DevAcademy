@@ -183,7 +183,7 @@
 			StateHasChanged();
 		}
 	}
-	void SetFilterMonth(int month)
+	async void SetFilterMonth(int month)
 	{
 		if (month == filterMonth)
 			filterMonth = default;
@@ -191,6 +191,9 @@
 			filterMonth = month;
 
 		if (selectedStation != null)
-			selectedStation.CalculateInfo(filterMonth);
+		{
+			await Task.Run(() => selectedStation.CalculateInfo(filterMonth));
+			StateHasChanged();
+		}
 	}
 }
